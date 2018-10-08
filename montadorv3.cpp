@@ -21,11 +21,24 @@ void substituipalavra (int i, char palavra[], char newword[]) {
 
 int main (){
   FILE *instrucoes;
-  char letra, palavra[100], rotulo[15], operacao[10], operando1[10], operando2[10];
+  char letra, palavra[100], rotulo[15], operacao[10], operando1[10], operando2[10], triangulo[15];
   int i, letrint, parametro, tam_rot;
   list<simb> tab_simb;
-  simb elemento_simb;
+  simb elemento_simb;//, elemento1
   list<simb>::iterator iterador;
+
+//  triangulo[0] = 't';
+//  triangulo[1] = 'r';
+//  triangulo[2] = 'i';
+//  triangulo[3] = 'a';
+//  triangulo[4] = 'n';
+//  triangulo[5] = 'g';
+//  triangulo[6] = 'u';
+//  triangulo[7] = 'l';
+//  triangulo[8] = 'o';
+
+//  substituipalavra(9, triangulo, elemento1.rotulo);
+//  tab_simb.push_back(elemento1);
 
   instrucoes = fopen("instrucoes.txt", "r");
   if (instrucoes == NULL){
@@ -78,16 +91,18 @@ int main (){
         i=0;
       }
     }
-    if (letra == '\n'){
-      if (strcmp(elemento_simb.rotulo, rotulo)!=0){
+    if (letra == '\n'){ //se a linha terminou//
+      if (strcmp(elemento_simb.rotulo, rotulo)!=0){ //compara se eh um rotulo diferente do anterior//
         substituipalavra(tam_rot, rotulo, elemento_simb.rotulo);
-        tab_simb.push_back(elemento_simb);
         iterador = tab_simb.begin();
-        while(strcmp(iterador->rotulo, rotulo)!=0 && iterador != tab_simb.end()){
+        while(strcmp(iterador->rotulo, rotulo)!=0 && iterador != tab_simb.end()){ //tenta achar rotulo na lista de simbolos//
           iterador++;
         }
-        if(iterador == tab_simb.end()) {
+        if(iterador != tab_simb.end()) { //achou elemento//
           printf("Erro! \n");
+        }
+        else {
+          tab_simb.push_back(elemento_simb);
         }
       }
       parametro = 1;
