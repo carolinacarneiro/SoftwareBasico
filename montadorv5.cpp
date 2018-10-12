@@ -24,7 +24,7 @@ void substituipalavra (int i, char palavra[], char newword[]) {
   printf("\t");
 }
 
-void preproc ()  {
+void preproc ()  { // funcao que realiza o preprocessamento
 
   FILE *instrucoes, *instrucoes0;
   char letra, palavra[100], rotulo[50], operacao[50], operando1[50], operando2[50];
@@ -88,7 +88,7 @@ void preproc ()  {
       if (mudaop == 1){
         if (strcmp(operacao, "equ")==0){
           substituipalavra(tam_rot, rotulo, elemento_preproc.nome);
-          elemento_preproc.valor = operando1[0] - 48;
+          elemento_preproc.valor = operando1[0] - 48; //corrigir o inteiro dado pela tabela ascii
           printf("valor: %d\t", elemento_preproc.valor);
           tab_preproc.push_back(elemento_preproc);
         }
