@@ -247,7 +247,6 @@ void primeirapassagem (list<simb> *tab_simb){
         elemento_simb.endereco = contadorpos;
         iterador = tab_simb->begin();
         while(strcmp(iterador->rotulo, rotulo)!=0 && iterador != tab_simb->end()){ //tenta achar rotulo na lista de simbolos//
-          printf("iterador->rotulo: %s\t", iterador->rotulo);
           iterador++;
         }
         if(iterador != tab_simb->end()) { //achou elemento//
@@ -271,7 +270,15 @@ void primeirapassagem (list<simb> *tab_simb){
         }
         else if (num_op == 0) {
           num_dir = descobrediretiva(operacao);
-          if (num_dir == 1 || num_dir == 2){
+          if (num_dir == 1){
+            if (mudaop1 == 1) {
+              contadorpos = contadorpos + atoi(operando1);
+            }
+            else {
+            contadorpos++;
+            }
+          }
+          if (num_dir == 2) {
             contadorpos++;
           }
           if (num_dir == 0) {
@@ -284,7 +291,7 @@ void primeirapassagem (list<simb> *tab_simb){
       printf("cpos: %d", contadorpos);
       parametro = 1;
       printf(" \n");
-      mudaop = 0; mudarot = 0;
+      mudaop = 0; mudarot = 0; mudaop1 = 0; mudaop2 = 0;
     }
   }
   fclose(instrucoes1);
@@ -390,7 +397,7 @@ void segundapassagem (list<simb> tab_simb){
       printf("cpos: %d", contadorpos);
       parametro = 1;
       printf(" \n");
-      mudaop = 0;
+      mudaop = 0; mudarot = 0; mudaop1 = 0; mudaop2 = 0;
     }
   }
 
