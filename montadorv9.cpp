@@ -161,7 +161,7 @@ void preproc ()  { // funcao que realiza o preprocessamento
 
     preencheparametro(&i, &parametro, &mudaadic, &mudarot, &mudaop, &mudaop1, &mudaop2, tam_rot, palavra, rotulo, operacao, operando1, operando2, letra, adicionado);
 
-    if (letra == '\n'){ //se a linha terminou//
+    if (letra == '\n' && mudaop == 1){ //se a linha terminou//
       if (mudaop == 1){
         if (strcmp(operacao, "equ")==0){
           printf("rotulo: %s\n", rotulo);
