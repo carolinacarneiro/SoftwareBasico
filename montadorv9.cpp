@@ -11,9 +11,20 @@ typedef struct diretiva {
 } diretiva;
 
 typedef struct simb {
-  char rotulo[15];
+  char rotulo[50];
   int endereco;
+  int externa;
 } simb;
+
+typedef struct def {
+  char rotulo[50];
+  int endereco;
+} def;
+
+typedef struct uso {
+  char rotulo[50];
+  int endereco[50];
+} uso;
 
 void preencheparametro(int *i, int *parametro, int *mudaadic, int *mudarot, int *mudaop, int *mudaop1, int *mudaop2, int tam_rot, char palavra[], char rotulo[], char operacao[], char operando1[], char operando2[], char letra, char adicionado[]) {
   if(*i>0 || letra == '+'){ //verifica se ja tem alguma palavra sendo formada//
@@ -120,6 +131,12 @@ int descobrediretiva (char instrucao[]) {
   else if(strcmp(instrucao,"section")==0) {
     return 3;
   }
+  else if(strcmp(instrucao,"public")==0) {
+    return 4;
+  }
+  else if(strcmp(instrucao,"extern")==0) {
+    return 5;
+  }
   else {
     return 0;
   }
@@ -225,12 +242,13 @@ void preproc ()  { // funcao que realiza o preprocessamento
   printf("\n -------------------------------------------- \n");
 }
 
-void primeirapassagem (list<simb> *tab_simb){
+void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def){
   FILE *instrucoes1;
   char letra, palavra[50], rotulo[50], operacao[50], operando1[50], operando2[50], adicionado[50];
   int i, letrint, parametro, tam_rot, num_op, contadorpos=0, contadorlinha=0, mudaop=0,
       mudarot=0, mudaop1=0, mudaop2=0, num_dir=0, mudaadic=0;
   simb elemento_simb;
+  def elemento_def;
   list<simb>::iterator iterador;
 
   instrucoes1 = fopen("instrucoes0.txt", "r");
@@ -255,7 +273,17 @@ void primeirapassagem (list<simb> *tab_simb){
       printf("mudarot: %d\t", mudarot);
       if (mudarot == 1){
         strcpy(elemento_simb.rotulo, rotulo);
-        elemento_simb.endereco = contadorpos;
+        if (descobrediretiva(operacao) == 5) { //detectar se a diretiva eh extern //
+          elemento_simb.endereco = 0;
+          elemento_simb.externa = 1;
+        }
+        else {
+          elemento_simb.endereco = contadorpos;
+          elemento_simb.externa = 0;
+          strcpy(elemento_def.rotulo, rotulo);
+          elemento_def.endereco = contadorpos;
+          printf("elemento_def: %s, %d\t", elemento_def.rotulo, elemento_def.endereco);
+        }
         iterador = tab_simb->begin();
         while(strcmp(iterador->rotulo, rotulo)!=0 && iterador != tab_simb->end()){ //tenta achar rotulo na lista de simbolos//
           iterador++;
@@ -281,8 +309,8 @@ void primeirapassagem (list<simb> *tab_simb){
         }
         else if (num_op == 0) {
           num_dir = descobrediretiva(operacao);
-          if (num_dir == 1){
-            if (mudaop1 == 1) {
+          if (num_dir == 1){ //diretiva space //
+            if (mudaop1 == 1) { //space com + //
               contadorpos = contadorpos + atoi(operando1);
             }
             else {
@@ -422,16 +450,11 @@ void segundapassagem (list<simb> tab_simb){
 }
 
 int main (){
-  FILE *instrucoes1;
-  char letra, palavra[50], rotulo[50], operacao[50], operando1[50], operando2[50];
-  int i, letrint, parametro, tam_rot, num_op, contadorpos=0, contadorlinha=0, mudaop=0,
-      mudarot=0, mudaop1=0, mudaop2=0, num_dir=0;
   list<simb> tab_simb;
-  simb elemento_simb;
-  list<simb>::iterator iterador;
+  list<def> tab_def;
 
   preproc();
-  primeirapassagem (&tab_simb);
+  primeirapassagem (&tab_simb, &tab_def);
   segundapassagem (tab_simb);
 
   return 0;
