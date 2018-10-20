@@ -385,6 +385,9 @@ void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def){
               if (atoi(operando1) == 0) {
                 elemento_simb.ehzero = 1;
               }
+              else {
+                elemento_simb.ehzero = 2;
+              }
             }
             strcpy(elemento_def.rotulo, rotulo);
             elemento_def.endereco = contadorpos;
@@ -516,6 +519,11 @@ void segundapassagem (list<simb> tab_simb){
         while(strcmp(iterador->rotulo, operando1)!=0 && iterador != tab_simb.end()){ //tenta achar rotulo na lista de simbolos//
           iterador++;
         }
+        if (num_op == 12 || num_op == 11) {
+          if (iterador->ehzero != 0) {
+            printf("Erro Semantico na linha %d. Modificacao de um valor constante\n", contadorlinha);
+          }
+        }
         if (num_op == 4 && iterador->ehzero == 1) {
           printf("Erro Semantico na linha %d. Divisao por zero\n", contadorlinha);
         }
@@ -551,6 +559,9 @@ void segundapassagem (list<simb> tab_simb){
         iterador2 = tab_simb.begin();
         while(strcmp(iterador2->rotulo, operando2)!=0 && iterador2 != tab_simb.end()){ //tenta achar rotulo na lista de simbolos//
           iterador2++;
+        }
+        if (iterador2->ehzero != 0) {
+          printf("Erro Semantico na linha %d. Modificacao de um valor constante\n", contadorlinha);
         }
         if (iterador2 == tab_simb.end()){
           printf("Erro Semantico! Operando %s Indefinido!\t", operando2);
