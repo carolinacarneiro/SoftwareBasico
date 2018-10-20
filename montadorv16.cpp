@@ -33,11 +33,12 @@ typedef struct uso {
 int errolexico(char palavra[]) {
   int tem_erro = 0, i=1;
 
-  if (isalpha(palavra[0]) == 0 || palavra[0] != '_') {
+  tem_erro = 0;
+  if (isalpha(palavra[0]) == 0 && palavra[0] != '_') {
     tem_erro = 1;
   }
   while (palavra[i] != '\0') {
-    if(isalpha(palavra[i]) == 0 && palavra[i] != '_') {
+    if(isalpha(palavra[i]) == 0 && palavra[i] != '_' && isdigit(palavra[i]) == 0) {
       printf("erro em: %c\t", palavra[i]);
       tem_erro = 1;
     }
@@ -519,7 +520,7 @@ void segundapassagem (list<simb> tab_simb){
   while(!feof(instrucoes1)){
     letra = getc(instrucoes1);
 
-    if (letra != ' ' && letra != '\n' && letra != '\t'  && letra != '+'){ //verifica se o char faz parte de alguma palavra//
+    if (letra != ' ' && letra != '\n' && letra != '\t'  && letra != '+' && letra != ':'){ //verifica se o char faz parte de alguma palavra//
       palavra[i]=letra;
       palavra[i+1] = '\0';
       i++;
@@ -528,33 +529,35 @@ void segundapassagem (list<simb> tab_simb){
     preencheparametro(&i, &parametro, &mudaadic, &mudarot, &mudaop, &mudaop1, &mudaop2, tam_rot, palavra, rotulo, operacao, operando1, operando2, letra, adicionado);
 
     if (letra == '\n'){ //se a linha terminou//
-      // if (mudarot == 1) {
-      //   tem_erro = errolexico(rotulo);
-      //   if (tem_erro == 1) {
-      //     printf("Erro Lexico na linha %d. Token invalido!\n", contadorlinha);
-      //   }
-      // }
-      // if (mudaop == 1) {
-      //   tem_erro = errolexico(rotulo);
-      //   if (tem_erro == 1) {
-      //     printf("Erro Lexico na linha %d. Token invalido!\n", contadorlinha);
-      //   }
-      // }
-      // if (mudaop1 == 1) {
-      //   tem_erro = errolexico(rotulo);
-      //   if (tem_erro == 1) {
-      //     printf("Erro Lexico na linha %d. Token invalido!\n", contadorlinha);
-      //   }
-      // }
-      // if (mudaop2 == 1) {
-      //   tem_erro = errolexico(rotulo);
-      //   if (tem_erro == 1) {
-      //     printf("Erro Lexico na linha %d. Token invalido!\n", contadorlinha);
-      //   }
-      // }
       preencheuso (&tab_uso, tab_simb, operando1, operando2, mudaop1, mudaop2, contadorpos);
       num_op = descobreinstrucao(operacao);
       num_dir = descobrediretiva(operacao);
+
+      if (mudarot == 1) {
+        tem_erro = errolexico(rotulo);
+        if (tem_erro == 1) {
+          printf("Erro Lexico no rotulo da linha %d. Token invalido!\n", contadorlinha);
+        }
+      }
+      if (mudaop == 1) {
+        tem_erro = errolexico(operacao);
+        if (tem_erro == 1) {
+          printf("Erro Lexico na operacao da linha %d. Token invalido!\n", contadorlinha);
+        }
+      }
+      if (mudaop1 == 1 && num_dir != 1 && num_dir != 2) {
+        tem_erro = errolexico(operando1);
+        if (tem_erro == 1) {
+          printf("Erro Lexico no operando 1 da linha %d. Token invalido!\n", contadorlinha);
+        }
+      }
+      if (mudaop2 == 1) {
+        tem_erro = errolexico(operando2);
+        if (tem_erro == 1) {
+          printf("Erro Lexico no operando 2 da linha %d. Token invalido!\n", contadorlinha);
+        }
+      }
+
       if ((num_op>=1 && num_op<=8)||(num_op>=10 && num_op<=13)){
         if (mudaop2 == 1) {
           printf("Erro Sintatico na linha %d. Quantidade de operandos invalida!\n", contadorlinha);
@@ -564,7 +567,7 @@ void segundapassagem (list<simb> tab_simb){
           iterador++;
         }
         if (iterador == tab_simb.end()){
-          printf("Erro Semantico! Operando %s Indefinido!\t", operando1);
+          printf("Erro Semantico na linha %d! Operando %s Indefinido!\t", contadorlinha, operando1);
         }
         else {
           if (num_op == 12 || num_op == 11) {
