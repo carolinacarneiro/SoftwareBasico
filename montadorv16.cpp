@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include <iostream>
@@ -28,6 +29,22 @@ typedef struct uso {
   int endereco[50];
   int indice_end = 0;
 } uso;
+
+int errolexico(char palavra[]) {
+  int tem_erro = 0, i=1;
+
+  if (isalpha(palavra[0]) == 0 || palavra[0] != '_') {
+    tem_erro = 1;
+  }
+  while (palavra[i] != '\0') {
+    if(isalpha(palavra[i]) == 0 && palavra[i] != '_') {
+      printf("erro em: %c\t", palavra[i]);
+      tem_erro = 1;
+    }
+    i++;
+  }
+  return tem_erro;
+}
 
 void preencheparametro(int *i, int *parametro, int *mudaadic, int *mudarot, int *mudaop, int *mudaop1, int *mudaop2, int tam_rot, char palavra[], char rotulo[], char operacao[], char operando1[], char operando2[], char letra, char adicionado[]) {
   if(*i>0 || letra == '+'){ //verifica se ja tem alguma palavra sendo formada//
@@ -389,6 +406,9 @@ void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def){
                 elemento_simb.ehzero = 2;
               }
             }
+            else {
+              elemento_simb.ehzero = 0;
+            }
             strcpy(elemento_def.rotulo, rotulo);
             elemento_def.endereco = contadorpos;
             tab_def->push_back(elemento_def);
@@ -472,7 +492,7 @@ void segundapassagem (list<simb> tab_simb){
   FILE *instrucoes1, *instrucoes2;
   char letra, palavra[50], rotulo[50], operacao[50], operando1[50], operando2[50], adicionado[50];
   int i, tam_rot, parametro, num_op, contadorpos=0, contadorlinha=1, mudaop=0,
-      mudarot=0, mudaop1=0, mudaop2=0, num_dir=0, mudaadic=0, end_uso = 0;
+      mudarot=0, mudaop1=0, mudaop2=0, num_dir=0, mudaadic=0, end_uso = 0, tem_erro = 0;
   simb elemento_simb;
   list<simb>::iterator iterador, iterador2, iterador_simb;
   list<uso> tab_uso;
@@ -508,6 +528,30 @@ void segundapassagem (list<simb> tab_simb){
     preencheparametro(&i, &parametro, &mudaadic, &mudarot, &mudaop, &mudaop1, &mudaop2, tam_rot, palavra, rotulo, operacao, operando1, operando2, letra, adicionado);
 
     if (letra == '\n'){ //se a linha terminou//
+      // if (mudarot == 1) {
+      //   tem_erro = errolexico(rotulo);
+      //   if (tem_erro == 1) {
+      //     printf("Erro Lexico na linha %d. Token invalido!\n", contadorlinha);
+      //   }
+      // }
+      // if (mudaop == 1) {
+      //   tem_erro = errolexico(rotulo);
+      //   if (tem_erro == 1) {
+      //     printf("Erro Lexico na linha %d. Token invalido!\n", contadorlinha);
+      //   }
+      // }
+      // if (mudaop1 == 1) {
+      //   tem_erro = errolexico(rotulo);
+      //   if (tem_erro == 1) {
+      //     printf("Erro Lexico na linha %d. Token invalido!\n", contadorlinha);
+      //   }
+      // }
+      // if (mudaop2 == 1) {
+      //   tem_erro = errolexico(rotulo);
+      //   if (tem_erro == 1) {
+      //     printf("Erro Lexico na linha %d. Token invalido!\n", contadorlinha);
+      //   }
+      // }
       preencheuso (&tab_uso, tab_simb, operando1, operando2, mudaop1, mudaop2, contadorpos);
       num_op = descobreinstrucao(operacao);
       num_dir = descobrediretiva(operacao);
@@ -519,23 +563,23 @@ void segundapassagem (list<simb> tab_simb){
         while(strcmp(iterador->rotulo, operando1)!=0 && iterador != tab_simb.end()){ //tenta achar rotulo na lista de simbolos//
           iterador++;
         }
-        if (num_op == 12 || num_op == 11) {
-          if (iterador->ehzero != 0) {
-            printf("Erro Semantico na linha %d. Modificacao de um valor constante\n", contadorlinha);
-          }
-        }
-        if (num_op == 4 && iterador->ehzero == 1) {
-          printf("Erro Semantico na linha %d. Divisao por zero\n", contadorlinha);
-        }
-        if(num_op >= 5 && num_op <= 8) { //algum tipo de jmp
-          if(iterador->secao_atual != 1) {
-            printf("Erro Semantico na linha %d. Pulo para secao errada!\n", contadorlinha);
-          }
-        }
         if (iterador == tab_simb.end()){
           printf("Erro Semantico! Operando %s Indefinido!\t", operando1);
         }
         else {
+          if (num_op == 12 || num_op == 11) {
+            if (iterador->ehzero != 0) {
+              printf("Erro Semantico na linha %d. Modificacao de um valor constante\n", contadorlinha);
+            }
+          }
+          if (num_op == 4 && iterador->ehzero != 0) {
+            printf("Erro Semantico na linha %d. Divisao por zero\n", contadorlinha);
+          }
+          if(num_op >= 5 && num_op <= 8) { //algum tipo de jmp
+            if(iterador->secao_atual != 1) {
+              printf("Erro Semantico na linha %d. Pulo para secao errada!\n", contadorlinha);
+            }
+          }
           fprintf(instrucoes2, "%d", num_op);
           fputs(" ", instrucoes2);
           if (mudaadic == 1) {
@@ -560,13 +604,13 @@ void segundapassagem (list<simb> tab_simb){
         while(strcmp(iterador2->rotulo, operando2)!=0 && iterador2 != tab_simb.end()){ //tenta achar rotulo na lista de simbolos//
           iterador2++;
         }
-        if (iterador2->ehzero != 0) {
-          printf("Erro Semantico na linha %d. Modificacao de um valor constante\n", contadorlinha);
-        }
         if (iterador2 == tab_simb.end()){
           printf("Erro Semantico! Operando %s Indefinido!\t", operando2);
         }
         else {
+          if (iterador2->ehzero != 0) {
+            printf("Erro Semantico na linha %d. Modificacao de um valor constante\n", contadorlinha);
+          }
           fprintf(instrucoes2, "%d", num_op);
           fputs(" ", instrucoes2);
           fprintf(instrucoes2, "%d", iterador->endereco);
