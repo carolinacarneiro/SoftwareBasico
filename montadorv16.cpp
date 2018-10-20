@@ -15,6 +15,7 @@ typedef struct simb {
   int endereco;
   int externa;
   int secao_atual = 0;
+  int ehzero = 0;
 } simb;
 
 typedef struct def {
@@ -380,6 +381,11 @@ void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def){
             elemento_simb.endereco = contadorpos;
             elemento_simb.externa = 0;
             elemento_simb.secao_atual = secao_atual;
+            if (descobrediretiva(operacao) == 2) {
+              if (atoi(operando1) == 0) {
+                elemento_simb.ehzero = 1;
+              }
+            }
             strcpy(elemento_def.rotulo, rotulo);
             elemento_def.endereco = contadorpos;
             tab_def->push_back(elemento_def);
@@ -509,6 +515,9 @@ void segundapassagem (list<simb> tab_simb){
         iterador = tab_simb.begin();
         while(strcmp(iterador->rotulo, operando1)!=0 && iterador != tab_simb.end()){ //tenta achar rotulo na lista de simbolos//
           iterador++;
+        }
+        if (num_op == 4 && iterador->ehzero == 1) {
+          printf("Erro Semantico na linha %d. Divisao por zero\n", contadorlinha);
         }
         if(num_op >= 5 && num_op <= 8) { //algum tipo de jmp
           if(iterador->secao_atual != 1) {
