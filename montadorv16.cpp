@@ -402,7 +402,7 @@ void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def, int *eh_modulo)
           if (descobrediretiva(operacao) == 5) { //detectar se a diretiva eh extern //
             elemento_simb.endereco = 0;
             elemento_simb.externa = 1;
-            elemento_simb.secao_atual = 0;
+            elemento_simb.secao_atual = 1;
           }
           else {
             elemento_simb.endereco = contadorpos;
@@ -439,10 +439,10 @@ void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def, int *eh_modulo)
         if (num_op == 0 && (num_dir >= 0 && num_dir <= 2) && secao_atual == 1) {
           printf("Erro Semantico na linha %d. Diretiva ou Instrucao na secao errada\n", contadorlinha);
         }
-        if (secao_atual == 2 && num_dir != 2 && num_dir != 3) {
+        if (secao_atual == 2 && num_dir != 2 && num_dir != 3 && num_dir != 6 && num_dir != 7) {
           printf("Erro Semantico na linha %d. Diretiva ou Instrucao na secao errada\n", contadorlinha);
         }
-        if (secao_atual == 3 && num_dir != 1 && num_dir != 3) {
+        if (secao_atual == 3 && num_dir != 1 && num_dir != 3 && num_dir != 6 && num_dir != 7) {
           printf("Erro Semantico na linha %d. Diretiva ou Instrucao na secao errada\n", contadorlinha);
         }
         if ((num_op>=1 && num_op<=8)||(num_op>=10 && num_op<=13)){
@@ -514,7 +514,7 @@ void segundapassagem (list<simb> tab_simb, list<def> tab_def, int eh_modulo){
   FILE *instrucoes1, *instrucoes2;
   char letra, palavra[50], rotulo[50], operacao[50], operando1[50], operando2[50], adicionado[50];
   int i, tam_rot, parametro, num_op, contadorpos=0, contadorlinha=1, mudaop=0,
-      mudarot=0, mudaop1=0, mudaop2=0, num_dir=0, mudaadic=0, end_uso = 0, tem_erro = 0, k,
+      mudarot=0, mudaop1=0, mudaop2=0, num_dir=0, mudaadic=0, end_uso = 0, tem_erro = 0, k, l,
       relativo[100], end_relativo;
   simb elemento_simb;
   list<simb>::iterator iterador, iterador2, iterador_simb;
@@ -587,6 +587,9 @@ void segundapassagem (list<simb> tab_simb, list<def> tab_def, int eh_modulo){
       }
 
       if ((num_op>=1 && num_op<=8)||(num_op>=10 && num_op<=13)){
+        relativo[end_relativo] = contadorpos + 1; // armazena os enderecos relativos
+        end_relativo ++;
+
         if (isdigit(operando1[0]) != 0) { // se o primeiro char for um numero
           printf("Erro Sintatico do operando 1 na linha %d. Tipo de argumento invalido\n", contadorlinha);
         }
@@ -631,6 +634,11 @@ void segundapassagem (list<simb> tab_simb, list<def> tab_def, int eh_modulo){
         contadorpos = contadorpos+2;
       }
       else if(num_op == 9) {
+        relativo[end_relativo] = contadorpos + 1; // armazena valores relativos
+        end_relativo ++;
+        relativo[end_relativo] = contadorpos + 2;
+        end_relativo ++;
+
         if (isdigit(operando1[0]) != 0) { // se o primeiro char for um numero
           printf("Erro Sintatico do operando 1 na linha %d. Tipo de argumento invalido\n", contadorlinha);
         }
@@ -718,14 +726,16 @@ void segundapassagem (list<simb> tab_simb, list<def> tab_def, int eh_modulo){
   }
 
   if(eh_modulo == 2) {
+    fputs("\n\nRELATIVE\n", instrucoes2);
+    for (l=0; l < end_relativo; l++) {
+      fprintf(instrucoes2, "%d ", relativo[l]);
+    }
     fputs("\n\nTABLE USE\n", instrucoes2);
     iterador_uso = tab_uso.begin();
     while(iterador_uso != tab_uso.end()){
-      k=0;
-      while(iterador_uso->endereco[k+1] != '\0') {
+      for (k=0; k < iterador_uso->indice_end; k++) {
         fprintf(instrucoes2, "%s ", iterador_uso->rotulo);
         fprintf(instrucoes2, "%d\n", iterador_uso->endereco[k]);
-        k++;
       }
       iterador_uso++;
     }
@@ -775,7 +785,7 @@ int main (){
    }
    printf("\n");
    printf("eh_modulo: %d\n\n", eh_modulo);
-  segundapassagem (tab_simb, tab_def, eh_modulo);
+   segundapassagem (tab_simb, tab_def, eh_modulo);
 
   return 0;
 }
