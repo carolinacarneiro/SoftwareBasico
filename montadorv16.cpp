@@ -181,6 +181,7 @@ void preencheuso (list<uso> *tab_uso, list<simb> tab_simb, char operando1[], cha
       iterador_uso++;
     }
     if (iterador_uso != tab_uso->end()) {
+      printf("elemento_uso: %s, endereco: %d", iterador_uso->rotulo, contadorpos+1);
       iterador_uso->endereco[iterador_uso->indice_end] = contadorpos + 1;
       iterador_uso->indice_end ++;
     }
@@ -192,6 +193,7 @@ void preencheuso (list<uso> *tab_uso, list<simb> tab_simb, char operando1[], cha
       iterador_uso++;
     }
     if (iterador_uso != tab_uso->end()) {
+      printf("elemento_uso: %s, endereco: %d", iterador_uso->rotulo, contadorpos+2);
       iterador_uso->endereco[iterador_uso->indice_end] = contadorpos + 2;
       iterador_uso->indice_end ++;
     }
@@ -508,13 +510,15 @@ void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def, int *eh_modulo)
   printf("\n -------------------------------------------- \n");
 }
 
-void segundapassagem (list<simb> tab_simb, int eh_modulo){
+void segundapassagem (list<simb> tab_simb, list<def> tab_def, int eh_modulo){
   FILE *instrucoes1, *instrucoes2;
   char letra, palavra[50], rotulo[50], operacao[50], operando1[50], operando2[50], adicionado[50];
   int i, tam_rot, parametro, num_op, contadorpos=0, contadorlinha=1, mudaop=0,
-      mudarot=0, mudaop1=0, mudaop2=0, num_dir=0, mudaadic=0, end_uso = 0, tem_erro = 0;
+      mudarot=0, mudaop1=0, mudaop2=0, num_dir=0, mudaadic=0, end_uso = 0, tem_erro = 0, k,
+      relativo[100], end_relativo;
   simb elemento_simb;
   list<simb>::iterator iterador, iterador2, iterador_simb;
+  list<def>::iterator iterador_def;
   list<uso> tab_uso;
   list<uso>::iterator iterador_uso;
   uso elemento_uso;
@@ -523,6 +527,7 @@ void segundapassagem (list<simb> tab_simb, int eh_modulo){
   while(iterador_simb != tab_simb.end()) {
     if (iterador_simb->externa == 1) {
       strcpy(elemento_uso.rotulo, iterador_simb->rotulo);
+      elemento_uso.indice_end = 0;
       tab_uso.push_back(elemento_uso);
     }
     iterador_simb++;
@@ -533,7 +538,11 @@ void segundapassagem (list<simb> tab_simb, int eh_modulo){
   if (instrucoes1 == NULL){
     printf("Este arquivo nao foi encontrado!\n");
   }
+  if (eh_modulo == 2) {
+    fputs("CODE\n", instrucoes2);
+  }
 
+  end_relativo = 0;
   parametro=1;
   i=0;
   while(!feof(instrucoes1)){
@@ -701,10 +710,31 @@ void segundapassagem (list<simb> tab_simb, int eh_modulo){
         }
       }
       contadorlinha++;
-      //printf("cpos: %d", contadorpos);
+      printf("cpos: %d", contadorpos);
       parametro = 1;
       printf(" \n");
       mudaop = 0; mudarot = 0; mudaop1 = 0; mudaop2 = 0; mudaadic = 0;
+    }
+  }
+
+  if(eh_modulo == 2) {
+    fputs("\n\nTABLE USE\n", instrucoes2);
+    iterador_uso = tab_uso.begin();
+    while(iterador_uso != tab_uso.end()){
+      k=0;
+      while(iterador_uso->endereco[k+1] != '\0') {
+        fprintf(instrucoes2, "%s ", iterador_uso->rotulo);
+        fprintf(instrucoes2, "%d\n", iterador_uso->endereco[k]);
+        k++;
+      }
+      iterador_uso++;
+    }
+    fputs("\nTABLE DEFINITION\n", instrucoes2);
+    iterador_def = tab_def.begin();
+    while(iterador_def != tab_def.end()){
+      fprintf(instrucoes2, "%s ", iterador_def->rotulo);
+      fprintf(instrucoes2, "%d\n", iterador_def->endereco);
+      iterador_def++;
     }
   }
 
@@ -745,7 +775,7 @@ int main (){
    }
    printf("\n");
    printf("eh_modulo: %d\n\n", eh_modulo);
-  segundapassagem (tab_simb, eh_modulo);
+  segundapassagem (tab_simb, tab_def, eh_modulo);
 
   return 0;
 }
