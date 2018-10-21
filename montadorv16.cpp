@@ -31,6 +31,30 @@ typedef struct uso {
   int indice_end = 0;
 } uso;
 
+int tratahexa(char palavra[]) {
+   int i, hexa, novo_num;
+   hexa = 1;
+
+   if (palavra[0] != '0' || palavra[1] != 'x') {
+     hexa = 0;
+   }
+   else {
+     for(i=2; palavra[i] != '\0'; i++) {
+       if (isxdigit(palavra[i]) == 0) {
+         hexa = 0;
+       }
+     }
+   }
+
+   if (hexa == 1) {
+     novo_num = (int)strtol(palavra, NULL, 16);
+   }
+   else {
+     novo_num = atoi(palavra);
+   }
+   return novo_num;
+}
+
 int errolexico(char palavra[]) {
   int tem_erro = 0, i=1;
 
@@ -515,7 +539,7 @@ void segundapassagem (list<simb> tab_simb, list<def> tab_def, int eh_modulo){
   char letra, palavra[50], rotulo[50], operacao[50], operando1[50], operando2[50], adicionado[50];
   int i, tam_rot, parametro, num_op, contadorpos=0, contadorlinha=1, mudaop=0,
       mudarot=0, mudaop1=0, mudaop2=0, num_dir=0, mudaadic=0, end_uso = 0, tem_erro = 0, k, l,
-      relativo[100], end_relativo;
+      relativo[100], end_relativo, novo_num;
   simb elemento_simb;
   list<simb>::iterator iterador, iterador2, iterador_simb;
   list<def>::iterator iterador_def;
@@ -610,7 +634,7 @@ void segundapassagem (list<simb> tab_simb, list<def> tab_def, int eh_modulo){
               printf("Erro Semantico na linha %d. Modificacao de um valor constante\n", contadorlinha);
             }
           }
-          if (num_op == 4 && iterador->ehzero != 0) {
+          if (num_op == 4 && iterador->ehzero == 1) {
             printf("Erro Semantico na linha %d. Divisao por zero\n", contadorlinha);
           }
           if(num_op >= 5 && num_op <= 8) { //algum tipo de jmp
@@ -707,7 +731,8 @@ void segundapassagem (list<simb> tab_simb, list<def> tab_def, int eh_modulo){
           if (mudaop2 == 1) {
             printf("Erro Sintatico na linha %d. Quantidade de operandos invalida!\n", contadorlinha);
           }
-          fputs(operando1, instrucoes2);
+          novo_num = tratahexa (operando1);
+          fprintf(instrucoes2, "%d ", novo_num);
           fputs(" ", instrucoes2);
         }
         if (num_dir == 0) {
@@ -751,12 +776,12 @@ void segundapassagem (list<simb> tab_simb, list<def> tab_def, int eh_modulo){
   fclose(instrucoes1);
   fclose(instrucoes2);
 
-  printf("\nTabela de Uso: \n");
-    iterador_uso = tab_uso.begin();
-    while(iterador_uso != tab_uso.end()){
-      printf("elemento: %s, %d, %d, %d\n", iterador_uso->rotulo, iterador_uso->endereco[0], iterador_uso->endereco[1], iterador_uso->endereco[2]);
-      iterador_uso++;
-    }
+  // printf("\nTabela de Uso: \n");
+  //   iterador_uso = tab_uso.begin();
+  //   while(iterador_uso != tab_uso.end()){
+  //     printf("elemento: %s, %d, %d, %d\n", iterador_uso->rotulo, iterador_uso->endereco[0], iterador_uso->endereco[1], iterador_uso->endereco[2]);
+  //     iterador_uso++;
+  //   }
     printf("\n");
 }
 
@@ -777,15 +802,7 @@ int main (){
 
   preproc();
   primeirapassagem (&tab_simb, &tab_def, &eh_modulo);
-   printf("Tabela de Simbolos: \n");
-   iterador = tab_simb.begin();
-   while(iterador != tab_simb.end()){
-     printf("elemento: %s, %d\n", iterador->rotulo, iterador->endereco);
-     iterador++;
-   }
-   printf("\n");
-   printf("eh_modulo: %d\n\n", eh_modulo);
-   segundapassagem (tab_simb, tab_def, eh_modulo);
+  segundapassagem (tab_simb, tab_def, eh_modulo);
 
   return 0;
 }
