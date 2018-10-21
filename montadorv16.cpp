@@ -17,6 +17,7 @@ typedef struct simb {
   int externa;
   int secao_atual = 0;
   int ehzero = 0;
+  int ehlabel;
 } simb;
 
 typedef struct def {
@@ -157,6 +158,12 @@ int descobrediretiva (char instrucao[]) {
   }
   else if(strcmp(instrucao,"extern")==0) {
     return 5;
+  }
+  else if(strcmp(instrucao, "begin")==0) {
+    return 6;
+  }
+  else if (strcmp(instrucao, "end")==0) {
+    return 7;
   }
   else {
     return 0;
@@ -351,7 +358,7 @@ void preproc ()  { // funcao que realiza o preprocessamento
   printf("\n -------------------------------------------- \n");
 }
 
-void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def){
+void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def, int *eh_modulo){
   FILE *instrucoes1;
   char letra, palavra[50], rotulo[50], operacao[50], operando1[50], operando2[50], adicionado[50];
   int i, letrint, parametro, tam_rot, num_op, contadorpos=0, contadorlinha=1, mudaop=0,
@@ -409,6 +416,12 @@ void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def){
             }
             else {
               elemento_simb.ehzero = 0;
+            }
+            if (strcmp(operacao, "space") !=0 && strcmp(operacao, "const") != 0) {
+              elemento_simb.ehlabel = 1;
+            }
+            else {
+              elemento_simb.ehlabel = 0;
             }
             strcpy(elemento_def.rotulo, rotulo);
             elemento_def.endereco = contadorpos;
@@ -471,6 +484,12 @@ void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def){
               printf("Erro Sintatico na linha %d. Secao Invalida\n", contadorlinha);
             }
           }
+          if (num_dir == 6) {
+            *eh_modulo = *eh_modulo + 1;
+          }
+          if (num_dir == 7) {
+            *eh_modulo = *eh_modulo + 1;
+          }
           if (num_dir == 0) {
             printf("Erro! Nao eh operacao valida!\t");
           }
@@ -489,7 +508,7 @@ void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def){
   printf("\n -------------------------------------------- \n");
 }
 
-void segundapassagem (list<simb> tab_simb){
+void segundapassagem (list<simb> tab_simb, int eh_modulo){
   FILE *instrucoes1, *instrucoes2;
   char letra, palavra[50], rotulo[50], operacao[50], operando1[50], operando2[50], adicionado[50];
   int i, tam_rot, parametro, num_op, contadorpos=0, contadorlinha=1, mudaop=0,
@@ -559,6 +578,10 @@ void segundapassagem (list<simb> tab_simb){
       }
 
       if ((num_op>=1 && num_op<=8)||(num_op>=10 && num_op<=13)){
+        if (isdigit(operando1[0]) != 0) { // se o primeiro char for um numero
+          printf("Erro Sintatico do operando 1 na linha %d. Tipo de argumento invalido\n", contadorlinha);
+        }
+
         if (mudaop2 == 1) {
           printf("Erro Sintatico na linha %d. Quantidade de operandos invalida!\n", contadorlinha);
         }
@@ -579,6 +602,9 @@ void segundapassagem (list<simb> tab_simb){
             printf("Erro Semantico na linha %d. Divisao por zero\n", contadorlinha);
           }
           if(num_op >= 5 && num_op <= 8) { //algum tipo de jmp
+            if (iterador->ehlabel != 1) {
+              printf("Erro Semantico na linha %d. Pulo para rotulo invalido\n", contadorlinha);
+            }
             if(iterador->secao_atual != 1) {
               printf("Erro Semantico na linha %d. Pulo para secao errada!\n", contadorlinha);
             }
@@ -596,6 +622,13 @@ void segundapassagem (list<simb> tab_simb){
         contadorpos = contadorpos+2;
       }
       else if(num_op == 9) {
+        if (isdigit(operando1[0]) != 0) { // se o primeiro char for um numero
+          printf("Erro Sintatico do operando 1 na linha %d. Tipo de argumento invalido\n", contadorlinha);
+        }
+        if (isdigit(operando2[0]) != 0) { // se o primeiro char for um numero
+          printf("Erro Sintatico do operando 2 na linha %d. Tipo de argumento invalido\n", contadorlinha);
+        }
+
         iterador = tab_simb.begin();
         while(strcmp(iterador->rotulo, operando1)!=0 && iterador != tab_simb.end()){ //tenta achar rotulo na lista de simbolos//
           iterador++;
@@ -632,6 +665,18 @@ void segundapassagem (list<simb> tab_simb){
         contadorpos++;
       }
       else if (num_op == 0) {
+        if (mudaop1 == 1) {
+          if (num_dir == 1 || num_dir == 2) {
+            if (isdigit(operando1[0]) == 0) {
+              printf("Erro Sintatico do operando 1 na linha %d. Tipo de argumento invalido\n", contadorlinha);
+            }
+          }
+          else {
+            if (isdigit(operando1[0]) != 0){
+            printf("Erro Sintatico do operando 1 na linha %d. Tipo de argumento invalido\n", contadorlinha);
+            }
+          }
+        }
         if (num_dir == 1){
           if (mudaop2 == 1) {
             printf("Erro Sintatico na linha %d. Quantidade de operandos invalida!\n", contadorlinha);
@@ -651,7 +696,7 @@ void segundapassagem (list<simb> tab_simb){
         if (num_dir == 0) {
           printf("Erro Sintatico na linha %d,  Diretiva invalida!\t", contadorlinha);
         }
-        if (num_dir > 5 || num_dir < 0) {
+        if (num_dir > 7 || num_dir < 0) {
           printf("Erro Sintatico na linha %d, Instrucao invalida!\t", contadorlinha);
         }
       }
@@ -676,10 +721,12 @@ void segundapassagem (list<simb> tab_simb){
 }
 
 int main (){
+  int eh_modulo;
   list<simb> tab_simb;
   list<def> tab_def;
   list<simb>::iterator iterador;
 
+  eh_modulo = 0;
 //  printf("Tabela de Definições: \n");
 //  iterador = tab_def.begin();
 //  while(iterador != tab_def.end()){
@@ -689,7 +736,7 @@ int main (){
 //  printf("\n");
 
   preproc();
-  primeirapassagem (&tab_simb, &tab_def);
+  primeirapassagem (&tab_simb, &tab_def, &eh_modulo);
    printf("Tabela de Simbolos: \n");
    iterador = tab_simb.begin();
    while(iterador != tab_simb.end()){
@@ -697,7 +744,8 @@ int main (){
      iterador++;
    }
    printf("\n");
-  segundapassagem (tab_simb);
+   printf("eh_modulo: %d\n\n", eh_modulo);
+  segundapassagem (tab_simb, eh_modulo);
 
   return 0;
 }
