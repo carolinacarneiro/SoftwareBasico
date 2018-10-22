@@ -16,127 +16,132 @@ using namespace std;
 ifstream arquivo_obj1, arquivo_obj2, arquivo_obj3, arquivo_obj4;
 
 
-bool ligador(int num_arquivo_obj, vector<ifstream*> object_vector, ofstream &saida)
+bool ligador(int num_arquivo_obj, vector<ifstream*> elemento_vetor, ofstream &saida)
 {
-	string lines, words;
-	vector <vector<string> > table_use_g, table_gd_g, code_g;
+	
+	vector <int> fator_de_correcao;
+	vector <vector <int> > realocacao_vetor;
+	vector <vector<string> > tabela_uso_global, table_gd_g, codigo_gerado;
 	vector <vector<string> >::iterator vec_vec_it;
 	vector <string>::iterator vec_it;
+	string linhas, palavras;
 	string::iterator it;
-	vector <vector <int> > realoc_vec;
-	vector <int> correction_factor;
+	
+	
 
 	for (int i = 0; i < num_arquivo_obj; ++i)			//Loop de acordo com o número de arquivos objetos passados
 	{
 		vector<string> table_use, table_gd, code;
-		vector<int> realocation;
-		short int counter = 0;
-		while(getline(*object_vector[i],lines))		//Percorre linha a linha o arquivo objeto
+		vector<int> realoca;
+		
+		short int contador = 0;
+		
+		while(getline(*elemento_vetor[i],linhas))		//Percorre linha a linha o arquivo objeto
 		{	
-			if(lines.find("TABLE USE") != string::npos)		//Achou a tabela de uso
+			if(linhas.find("TABLE USE") != string::npos)		//Achou a tabela de uso
 			{
-				while(getline(*object_vector[i],lines) && lines.find("TABLE DEFINITION") == string::npos) //Enquanto ainda for a tabela de uso
+				while(getline(*elemento_vetor[i],linhas) && linhas.find("TABLE DEFINITION") == string::npos) //Enquanto ainda for a tabela de uso
 				{
-					istringstream is(lines);
-					while(getline(is, words,' '))	//Pega as palavras dentro da linha
+					istringstream is(linhas);
+					while(getline(is, palavras,' '))	//Pega as palavras dentro da linha
 					{
-						table_use.push_back(words);	//Coloca no vector
+						table_use.push_back(palavras);	//Coloca no vector
 					}
 
 				}
 			}
-			if(lines.find("TABLE DEFINITION") != string::npos)	//Funcionamento similar ao if anterior
+			if(linhas.find("TABLE DEFINITION") != string::npos)	//Funcionamento similar ao if anterior
 			{
-				while(getline(*object_vector[i],lines) && lines.find("TABLE REALOCATION") == string::npos)
+				while(getline(*elemento_vetor[i],linhas) && linhas.find("TABLE REALOCATION") == string::npos)
 				{
-					istringstream is(lines);
-					while(getline(is, words,' '))
+					istringstream is(linhas);
+					while(getline(is, palavras,' '))
 					{
-						table_gd.push_back(words);
-						//cout << words << endl;
+						table_gd.push_back(palavras);
+						//cout << palavras << endl;
 					}
 
 				}
 			}
-			if(lines.find("TABLE REALOCATION") != string::npos)	//Acha a tabela com os bits de realocação
+			if(linhas.find("TABLE REALOCATION") != string::npos)	//Acha a tabela com os bits de realocação
 			{
-				getline(*object_vector[i],lines);
-				for(it = lines.begin(); it < lines.end(); ++it)
+				getline(*elemento_vetor[i],linhas);
+				for(it = linhas.begin(); it < linhas.end(); ++it)
 				{
-					realocation.push_back(int(*it) - 48);		//Converte pra int e joga no vector
+					realoca.push_back(int(*it) - 48);		//Converte pra int e joga no vector
 					//cout << (int(*it)-48) << endl;
-					++counter;									//Conta o tamanho do código para calcular o fator de correção
+					++contador;									//Conta o tamanho do código para calcular o fator de correção
 				}	
 			}
-			if(lines.find("CODE") != string::npos)		//Acha a seção CODE
+			if(linhas.find("CODE") != string::npos)		//Acha a seção CODE
 			{
-				while(getline(*object_vector[i],lines, ' '))	//Separa a seção CODE por espaços
+				while(getline(*elemento_vetor[i],linhas, ' '))	//Separa a seção CODE por espaços
 				{
-					code.push_back(lines);		//Envia pro vector
+					code.push_back(linhas);		//Envia pro vector
 				}
 			}
 		}
 
 		if(i == 0)			//Calcula o fator de correção no segundo arquivo
 		{
-			correction_factor.push_back(0);
-			correction_factor.push_back(counter);
+			fator_de_correcao.push_back(0);
+			fator_de_correcao.push_back(contador);
 		}
 		else if(i == 1)		//Calcula o fator de correção no terceiro arquivo
 		{
-			correction_factor.push_back(counter+(correction_factor[1]));
+			fator_de_correcao.push_back(contador+(fator_de_correcao[1]));
 		}
 
 		if(i != 0)			//Aplica o fator de correção
 		{
 			for(unsigned int j = 1; j < table_gd.size(); j+=2) // Aplica o fator de correção na tabela de definições
 			{
-				table_gd[j] = to_string(stoi(table_gd[j]) + correction_factor[i]);
+				table_gd[j] = to_string(stoi(table_gd[j]) + fator_de_correcao[i]);
 				//cout << table_gd[j] << endl;
 			}
 			for(unsigned int cont = 0; cont < code.size(); cont++) //Aplica na seção CODE dependendo da tabela de realocação
 			{
-				if(realocation[cont])
+				if(realoca[cont])
 				{
-					code[cont] = to_string(correction_factor[i] + stoi(code[cont]));
+					code[cont] = to_string(fator_de_correcao[i] + stoi(code[cont]));
 					//cout << code[cont] << endl;
 				}
 			}
 		}
-		table_use_g.push_back(table_use);		//Salva todas as informações do arquivo[i]
-		realoc_vec.push_back(realocation);
+		tabela_uso_global.push_back(table_use);		//Salva todas as informações do arquivo[i]
+		realocacao_vetor.push_back(realoca);
 		table_gd_g.push_back(table_gd);
-		code_g.push_back(code);
+		codigo_gerado.push_back(code);
 	}
 
-	for(unsigned int i = 0; i < table_use_g.size(); i++)		//Resolve pendências cruzadas
+	for(unsigned int i = 0; i < tabela_uso_global.size(); i++)		//Resolve pendências cruzadas
 	{
-		for(unsigned int j = 0; j < table_use_g[i].size(); j+=2)
+		for(unsigned int j = 0; j < tabela_uso_global[i].size(); j+=2)
 		{
-			//cout << table_use_g[i][j] << ' ';
+			//cout << tabela_uso_global[i][j] << ' ';
 			bool flag_achou = false;
 			for(unsigned int g = 0; g < table_gd_g.size(); g++)
 			{
 				for(unsigned int k = 0; k < table_gd_g[g].size(); k+=2)
 				{
-					if(table_use_g[i][j] == table_gd_g[g][k])
+					if(tabela_uso_global[i][j] == table_gd_g[g][k])
 					{
 						//cout << table_gd_g[g][k] << "  achou" << endl;
-						int temp = stoi(code_g[i][stoi(table_use_g[i][j+1])]) + stoi(table_gd_g[g][k+1]);
-						code_g[i][stoi(table_use_g[i][j+1])] = to_string(temp);
+						int temp = stoi(codigo_gerado[i][stoi(tabela_uso_global[i][j+1])]) + stoi(table_gd_g[g][k+1]);
+						codigo_gerado[i][stoi(tabela_uso_global[i][j+1])] = to_string(temp);
 						flag_achou = true;
-						//cout << code_g[i][stoi(table_use_g[i][j+1])] << " conteudo " << endl;
+						//cout << codigo_gerado[i][stoi(tabela_uso_global[i][j+1])] << " conteudo " << endl;
 					}
 				}
 			}
 			if(!flag_achou)
 			{
-				cerr << "Erro de ligação: Símbolo " << table_use_g[i][j] << " não definido" << endl;
+				cerr << "Erro de ligação: Símbolo " << tabela_uso_global[i][j] << " não definido" << endl;
 				return false;
 			}
 		}
 	}
-	for(vector <string> vec : code_g)	//Passa a saída pro arquivo de saída
+	for(vector <string> vec : codigo_gerado)	//Passa a saída pro arquivo de saída
 	{
 		for(string st : vec)
 		{
@@ -148,9 +153,9 @@ bool ligador(int num_arquivo_obj, vector<ifstream*> object_vector, ofstream &sai
 }
 
 
-int main(int argc, char const *argv[])
-{
-	vector<ifstream*> files;
+int main(int argc, char const *argv[]){
+
+	vector<ifstream*> arquivos;
 
 	if(argc < 3 || argc > 6){ 
 
@@ -158,58 +163,58 @@ int main(int argc, char const *argv[])
 		//argc < 3, esta faltando ou arquivo de saida ou arquivo de entrada. 
 		//Para argc maior que 6, há mais que 4 arquivos objeto
 
-		cerr << "Erro! Escolha no máximo 4 arquivos objetos e um arquivo de saída." << endl;
+		cerr << "Erro! Escolha no máximo 4 arquivos objetos e um arquivo de saída.\n" << endl;
 		return -1;
 	}		
 	
 	if(argc == 3){					//Abre 1 arquivo obj
 	
 		arquivo_obj1.open(argv[1]);
-		files.push_back(&arquivo_obj1);
+		arquivos.push_back(&arquivo_obj1);
 	}
 	
 	if(argc == 4){					//Abre 2 arquivos obj
 	
 		arquivo_obj1.open(argv[1]);
-		files.push_back(&arquivo_obj1);
+		arquivos.push_back(&arquivo_obj1);
 		arquivo_obj2.open(argv[2]);
-		files.push_back(&arquivo_obj2);
+		arquivos.push_back(&arquivo_obj2);
 	}
 	if(argc == 5){ 					// Abre 3 arquivos obj
 	
 		arquivo_obj1.open(argv[1]);
-		files.push_back(&arquivo_obj1);
+		arquivos.push_back(&arquivo_obj1);
 		arquivo_obj2.open(argv[2]);
-		files.push_back(&arquivo_obj2);
+		arquivos.push_back(&arquivo_obj2);
 		arquivo_obj3.open(argv[3]);
-		files.push_back(&arquivo_obj3);
+		arquivos.push_back(&arquivo_obj3);
 	}
 
 	if(argc == 6){ 					// Abre 4 arquivos obj
 	
 		arquivo_obj1.open(argv[1]);
-		files.push_back(&arquivo_obj1);
+		arquivos.push_back(&arquivo_obj1);
 		arquivo_obj2.open(argv[2]);
-		files.push_back(&arquivo_obj2);
+		arquivos.push_back(&arquivo_obj2);
 		arquivo_obj3.open(argv[3]);
-		files.push_back(&arquivo_obj3);
+		arquivos.push_back(&arquivo_obj3);
 		arquivo_obj4.open(argv[4]);
-		files.push_back(&arquivo_obj4);
+		arquivos.push_back(&arquivo_obj4);
 	}
 
 
 	string filename(argv[argc-1]);	//Checa se o último parâmetro passado é arquivo de saída (.e)
 	
-	if(filename.substr(filename.find(".")+1) != "e")
-	{
-		cerr << "Nome do arquivo de saída inválido! Escolha um arquivo de saída no formato: saída.e" << endl;
+	if(filename.substr(filename.find(".")+1) != "e"){
+	
+		cerr << "Nome do arquivo de saída inválido!\nEscolha um arquivo de saída no formato: saída.e" << endl;
 		return -1;
 	}
-	ofstream exe_file(argv[argc-1], ios::out|ios::trunc); //Abre o arquivo de saída
+	
+	ofstream arquivo_saida_executavel(argv[argc-1], ios::out|ios::trunc); //Abre o arquivo de saída
 
 
-
-	ligador((argc - 2), files, exe_file);  //Liga os arquivos
+	ligador((argc - 2), arquivos, arquivo_saida_executavel);  //Executa a função para ligar os arquivos e gerar o arquivo executavel
 
 	return 0;
 }
