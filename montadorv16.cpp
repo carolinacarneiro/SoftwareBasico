@@ -224,8 +224,7 @@ void preencheuso (list<uso> *tab_uso, list<simb> tab_simb, char operando1[], cha
   }
 }
 
-void preproc ()  { // funcao que realiza o preprocessamento
-
+void preproc (auto strarquivo_entrada, auto strarquivo_saida0)  { // funcao que realiza o preprocessamento
   FILE *instrucoes, *instrucoes0;
   char letra, letrant, palavra[100], rotulo[50], operacao[50], operando1[50], operando2[50], operando3[10][50], adicionado[50];
   int i, j,letrint, parametro, tam_rot, mudarot=0, mudaop=0, mudaop1=0, mudaop2=0, ignoralinha=0, mudaadic=0, contadorlinha=1;
@@ -233,8 +232,8 @@ void preproc ()  { // funcao que realiza o preprocessamento
   diretiva elemento_preproc;
   list<diretiva>::iterator iterador_p;
 
-  instrucoes = fopen("instrucoes.txt", "r");
-  instrucoes0 = fopen("instrucoes0.txt", "w+");
+  instrucoes = fopen(strarquivo_entrada.c_str(), "r");
+  instrucoes0 = fopen(strarquivo_saida0.c_str(), "w+");
 
   parametro=1;
   i=0;
@@ -380,12 +379,13 @@ void preproc ()  { // funcao que realiza o preprocessamento
   }
   fclose(instrucoes);
   fclose(instrucoes0);
+
   printf ("fim pre processamento!\n");
   printf("\n -------------------------------------------- \n");
 }
 
-void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def, int *eh_modulo){
-  FILE *instrucoes1;
+void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def, int *eh_modulo, auto strarquivo_saida0){
+  FILE *instrucoes, *instrucoes1;
   char letra, palavra[50], rotulo[50], operacao[50], operando1[50], operando2[50], adicionado[50];
   int i, letrint, parametro, tam_rot, num_op, contadorpos=0, contadorlinha=1, mudaop=0,
       mudarot=0, mudaop1=0, mudaop2=0, num_dir=0, mudaadic=0, secao_atual = 0;
@@ -393,7 +393,7 @@ void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def, int *eh_modulo)
   def elemento_def;
   list<simb>::iterator iterador;
 
-  instrucoes1 = fopen("instrucoes0.txt", "r");
+  instrucoes1 = fopen(strarquivo_saida0.c_str(), "r");
   if (instrucoes1 == NULL){
     printf("Este arquivo nao foi encontrado!\n");
   }
@@ -534,7 +534,7 @@ void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def, int *eh_modulo)
   printf("\n -------------------------------------------- \n");
 }
 
-void segundapassagem (list<simb> tab_simb, list<def> tab_def, int eh_modulo){
+void segundapassagem (list<simb> tab_simb, list<def> tab_def, int eh_modulo, auto strarquivo_saida0, auto strarquivo_saida1){
   FILE *instrucoes1, *instrucoes2;
   char letra, palavra[50], rotulo[50], operacao[50], operando1[50], operando2[50], adicionado[50];
   int i, tam_rot, parametro, num_op, contadorpos=0, contadorlinha=1, mudaop=0,
@@ -557,11 +557,12 @@ void segundapassagem (list<simb> tab_simb, list<def> tab_def, int eh_modulo){
     iterador_simb++;
   }
 
-  instrucoes2 = fopen ("instrucoes2.txt", "w+");
-  instrucoes1 = fopen("instrucoes0.txt", "r");
-  if (instrucoes1 == NULL){
-    printf("Este arquivo nao foi encontrado!\n");
-  }
+  instrucoes2 = fopen (strarquivo_saida1.c_str(), "w+");
+  instrucoes1 = fopen(strarquivo_saida0.c_str(), "r");
+
+  // if (instrucoes1 == NULL){
+  //   printf("Este arquivo nao foi encontrado!\n");
+  // }
   if (eh_modulo == 2) {
     fputs("CODE\n", instrucoes2);
   }
@@ -775,7 +776,6 @@ void segundapassagem (list<simb> tab_simb, list<def> tab_def, int eh_modulo){
 
   fclose(instrucoes1);
   fclose(instrucoes2);
-
   // printf("\nTabela de Uso: \n");
   //   iterador_uso = tab_uso.begin();
   //   while(iterador_uso != tab_uso.end()){
@@ -785,24 +785,31 @@ void segundapassagem (list<simb> tab_simb, list<def> tab_def, int eh_modulo){
     printf("\n");
 }
 
-int main (){
+int main (int argc, char *argv[]){
+  auto arquivo_entrada = argv[1];
+  auto arquivo_saida0 = argv[1];
+  auto arquivo_saida1 = argv[1];
+  auto strarquivo_entrada = std::string(arquivo_entrada);
+  auto strarquivo_saida0 = std::string(arquivo_saida0);
+  auto strarquivo_saida1 = std::string(arquivo_saida1);
   int eh_modulo;
   list<simb> tab_simb;
   list<def> tab_def;
   list<simb>::iterator iterador;
 
-  eh_modulo = 0;
-//  printf("Tabela de Definições: \n");
-//  iterador = tab_def.begin();
-//  while(iterador != tab_def.end()){
-//    printf("elemento: %s, %d\n", iterador->rotulo, iterador->endereco);
-//    iterador++;
-//  }
-//  printf("\n");
+  if(argc != 2) {
+    printf("Erro no numero de argumentos!\n");
+    return 0;
+  }
 
-  preproc();
-  primeirapassagem (&tab_simb, &tab_def, &eh_modulo);
-  segundapassagem (tab_simb, tab_def, eh_modulo);
+  eh_modulo = 0;
+  strarquivo_entrada.append(".asm");
+  strarquivo_saida0.append(".pre");
+  strarquivo_saida1.append(".txt");
+
+  preproc(strarquivo_entrada, strarquivo_saida0);
+  primeirapassagem (&tab_simb, &tab_def, &eh_modulo, strarquivo_saida0);
+  segundapassagem (tab_simb, tab_def, eh_modulo, strarquivo_saida0, strarquivo_saida1);
 
   return 0;
 }
