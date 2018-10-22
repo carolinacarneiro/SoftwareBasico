@@ -2,7 +2,7 @@
 Trabalho 1 de Software Basico (Montador)
 Alunos:
 - Filipe Maia Soares  15/0051409
-- Carolina --- Carneiro
+- Carolina Araujo Carneiro  12/0113422
 
 Instrucoes de Compilacao:
 Usando g++ 7.2.0 (Ubuntu 17.10)
