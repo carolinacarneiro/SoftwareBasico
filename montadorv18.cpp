@@ -31,38 +31,38 @@ typedef struct uso {
   int indice_end = 0;
 } uso;
 
-int tratahexa(char palavra[]) {
+int tratahexa(char palavra[]) { // funcao que identifica o tipo de numero contido na string e converte pra int
    int i, hexa, novo_num;
    hexa = 1;
 
-   if (palavra[0] != '0' || palavra[1] != 'x') {
+   if (palavra[0] != '0' || palavra[1] != 'x') { // verifica se esta na notacao 0x---
      hexa = 0;
    }
    else {
-     for(i=2; palavra[i] != '\0'; i++) {
+     for(i=2; palavra[i] != '\0'; i++) { // se o resto da palavra for de hexadecimais
        if (isxdigit(palavra[i]) == 0) {
          hexa = 0;
        }
      }
    }
 
-   if (hexa == 1) {
+   if (hexa == 1) { // devolve numero int de string de hexa
      novo_num = (int)strtol(palavra, NULL, 16);
    }
-   else {
+   else { // devolve numero int de string de inteiro
      novo_num = atoi(palavra);
    }
    return novo_num;
 }
 
-int errolexico(char palavra[]) {
+int errolexico(char palavra[]) { // funcao que identifica erros na escrita dos tokens
   int tem_erro = 0, i=1;
 
-  tem_erro = 0;
-  if (isalpha(palavra[0]) == 0 && palavra[0] != '_') {
+  tem_erro = 0; // primeiramente, a palavra nao tem erro nenhum
+  if (isalpha(palavra[0]) == 0 && palavra[0] != '_') { // o primeiro char nao pode ser nada alem do alfabeto
     tem_erro = 1;
   }
-  while (palavra[i] != '\0') {
+  while (palavra[i] != '\0') { // loop que verifica se os argumentos do meio da palavra sao alfabeticas
     if(isalpha(palavra[i]) == 0 && palavra[i] != '_' && isdigit(palavra[i]) == 0) {
       printf("erro em: %c\t", palavra[i]);
       tem_erro = 1;
@@ -74,14 +74,13 @@ int errolexico(char palavra[]) {
 
 void preencheparametro(int *i, int *parametro, int *mudaadic, int *mudarot, int *mudaop, int *mudaop1, int *mudaop2, int tam_rot, char palavra[], char rotulo[], char operacao[], char operando1[], char operando2[], char letra, char adicionado[]) {
   if(*i>0 || letra == '+'){ //verifica se ja tem alguma palavra sendo formada//
-    //printf("palavra[i-1]: %c\n", palavra[*i-1]);
     if ((letra == ' ' || letra == '\n' || letra == '\t' || letra == ':' || letra == '+')){ //verifica se eh termino de palavra//
       if (letra == ':'){ //eh rotulo?//
         *mudarot = *mudarot + 1;
         *i = *i-1;
         tam_rot = *i;
         printf("rotulo: ");
-        strcpy(rotulo, palavra);
+        strcpy(rotulo, palavra); // completa o rotulo
         printf("%s\t", rotulo);
       }
       else if (*mudaadic == 1) {
@@ -117,7 +116,7 @@ void preencheparametro(int *i, int *parametro, int *mudaadic, int *mudarot, int 
   }
 }
 
-int descobreinstrucao (char instrucao[]) {
+int descobreinstrucao (char instrucao[]) { // funcao que descobre a instrucao
 
   if(strcmp(instrucao,"add")==0){
     return 1;
@@ -205,7 +204,6 @@ void preencheuso (list<uso> *tab_uso, list<simb> tab_simb, char operando1[], cha
       iterador_uso++;
     }
     if (iterador_uso != tab_uso->end()) {
-      printf("elemento_uso: %s, endereco: %d", iterador_uso->rotulo, contadorpos+1);
       iterador_uso->endereco[iterador_uso->indice_end] = contadorpos + 1;
       iterador_uso->indice_end ++;
     }
@@ -217,12 +215,11 @@ void preencheuso (list<uso> *tab_uso, list<simb> tab_simb, char operando1[], cha
       iterador_uso++;
     }
     if (iterador_uso != tab_uso->end()) {
-      printf("elemento_uso: %s, endereco: %d", iterador_uso->rotulo, contadorpos+2);
       iterador_uso->endereco[iterador_uso->indice_end] = contadorpos + 2;
       iterador_uso->indice_end ++;
     }
   }
-}
+} // funcao que preenche cada argumento (rotulo, instrucao etc) com o contido no vetor palavra
 
 void preproc (auto strarquivo_entrada, auto strarquivo_saida0)  { // funcao que realiza o preprocessamento
   FILE *instrucoes, *instrucoes0;
@@ -237,7 +234,7 @@ void preproc (auto strarquivo_entrada, auto strarquivo_saida0)  { // funcao que 
 
   parametro=1;
   i=0;
-  while(!feof(instrucoes)){
+  while(!feof(instrucoes)){ // enquanto o arquivo nao terminar
     letrant = letra;
     letra = getc(instrucoes);
     if (letra == ';'){ //se for comentario, ignora tudo ate o \n//
@@ -245,8 +242,7 @@ void preproc (auto strarquivo_entrada, auto strarquivo_saida0)  { // funcao que 
         letra = getc(instrucoes);
       }
     }
-    if(letra == '+' && (letrant == '\t'|| letrant == ' ')){
-      printf("mudou adic! \n");
+    if(letra == '+' && (letrant == '\t'|| letrant == ' ')){ // se o char for + e a letra anterior for espaco, eh porque a palavra anterior ja foi preenchida
       mudaadic = 1;
     }
 
@@ -266,7 +262,7 @@ void preproc (auto strarquivo_entrada, auto strarquivo_saida0)  { // funcao que 
       if ((letra == ' ' || letra == '\n' || letra == '\t' || letra == ':' || letra == '+')){ //verifica se eh termino de palavra//
         if (letra == ':'){ //eh rotulo?//
           mudarot = mudarot + 1;
-          if (mudarot > 1) {
+          if (mudarot > 1) { // se tiver mais de um rotulo, ja printa no arquivo pre processado
             fputs(rotulo, instrucoes0);
             fputs(":", instrucoes0);
             fputs("\t", instrucoes0);
@@ -314,7 +310,7 @@ void preproc (auto strarquivo_entrada, auto strarquivo_saida0)  { // funcao que 
 
     if (letra == '\n' && mudaop == 1){ //se a linha terminou//
       if (mudaop == 1){
-        if (strcmp(operacao, "equ")==0){
+        if (strcmp(operacao, "equ")==0){ // se for equ, armazena nome do rotulo e valor
           printf("rotulo: %s\n", rotulo);
           strcpy(elemento_preproc.nome, rotulo);
           elemento_preproc.valor = atoi(operando1); //corrigir o inteiro dado pela tabela ascii
@@ -384,7 +380,7 @@ void preproc (auto strarquivo_entrada, auto strarquivo_saida0)  { // funcao que 
   printf("\n -------------------------------------------- \n");
 }
 
-void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def, int *eh_modulo, auto strarquivo_saida0){
+void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def, int *eh_modulo, auto strarquivo_saida0){ // funcao que realiza a primeira passagem (monta a tabela de simbolos)
   FILE *instrucoes, *instrucoes1;
   char letra, palavra[50], rotulo[50], operacao[50], operando1[50], operando2[50], adicionado[50];
   int i, letrint, parametro, tam_rot, num_op, contadorpos=0, contadorlinha=1, mudaop=0,
@@ -420,7 +416,7 @@ void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def, int *eh_modulo,
           iterador++;
         }
         if(iterador != tab_simb->end()) { //achou elemento//
-          printf("Erro Semantico na linha %d. Simbolo Redefinido\n", contadorlinha);
+          printf("Erro Semantico na linha %d. Simbolo %s Redefinido\n", contadorlinha, iterador->rotulo);
         }
         else {
           if (descobrediretiva(operacao) == 5) { //detectar se a diretiva eh extern //
@@ -433,7 +429,7 @@ void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def, int *eh_modulo,
             elemento_simb.externa = 0;
             elemento_simb.secao_atual = secao_atual;
             if (descobrediretiva(operacao) == 2) {
-              if (atoi(operando1) == 0) {
+              if (atoi(operando1) == 0) { // detecta se o operando1 vale zero para detectar futuramente fivisao por zero
                 elemento_simb.ehzero = 1;
               }
               else {
@@ -453,7 +449,6 @@ void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def, int *eh_modulo,
             elemento_def.endereco = contadorpos;
             tab_def->push_back(elemento_def);
           }
-          printf("pos: %d ", elemento_simb.endereco);
           tab_simb->push_back(elemento_simb);
         }
       }
@@ -487,10 +482,10 @@ void primeirapassagem (list<simb> *tab_simb, list<def> *tab_def, int *eh_modulo,
             contadorpos++;
             }
           }
-          if (num_dir == 2) {
+          if (num_dir == 2) { // diretiva const
             contadorpos++;
           }
-          if (num_dir == 3) {
+          if (num_dir == 3) { // diretiva section
             if (strcmp(operando1, "text")==0) {
               secao_atual = 1;
             }
@@ -557,13 +552,13 @@ void segundapassagem (list<simb> tab_simb, list<def> tab_def, int eh_modulo, aut
     iterador_simb++;
   }
 
-  instrucoes2 = fopen ("auxiliar.txt", "w+");
+  instrucoes2 = fopen ("auxiliar.txt", "w+"); // arquivo auxiliar para escrever o arquivo objeto na ordem correta
   instrucoes1 = fopen(strarquivo_saida0.c_str(), "r");
 
-  // if (instrucoes1 == NULL){
-  //   printf("Este arquivo nao foi encontrado!\n");
-  // }
-  if (eh_modulo == 2) {
+  if (instrucoes1 == NULL){
+    printf("Este arquivo nao foi encontrado!\n");
+  }
+  if (eh_modulo == 2) { // se o arquivo contem begin e end
     fputs("CODE\n", instrucoes2);
   }
 
@@ -698,7 +693,7 @@ void segundapassagem (list<simb> tab_simb, list<def> tab_def, int eh_modulo, aut
         }
         contadorpos = contadorpos+3;
       }
-      else if(num_op == 14) {
+      else if(num_op == 14) { // instrucao stop
         if (mudaop1 == 1) {
           printf("Erro Sintatico na linha %d. Quantidade de operandos invalida!\n", contadorlinha);
         }
@@ -706,7 +701,7 @@ void segundapassagem (list<simb> tab_simb, list<def> tab_def, int eh_modulo, aut
         fputs(" ", instrucoes2);
         contadorpos++;
       }
-      else if (num_op == 0) {
+      else if (num_op == 0) { // nao achou instrucao
         if (mudaop1 == 1) {
           if (num_dir == 1 || num_dir == 2) {
             if (isdigit(operando1[0]) == 0) {
@@ -737,10 +732,7 @@ void segundapassagem (list<simb> tab_simb, list<def> tab_def, int eh_modulo, aut
           fputs(" ", instrucoes2);
         }
         if (num_dir == 0) {
-          printf("Erro Sintatico na linha %d,  Diretiva invalida!\t", contadorlinha);
-        }
-        if (num_dir > 7 || num_dir < 0) {
-          printf("Erro Sintatico na linha %d, Instrucao invalida!\t", contadorlinha);
+          printf("Erro Sintatico na linha %d,  Diretiva ou Instucao invalida!\t", contadorlinha);
         }
       }
       contadorlinha++;
@@ -752,7 +744,7 @@ void segundapassagem (list<simb> tab_simb, list<def> tab_def, int eh_modulo, aut
   }
   fclose(instrucoes2);
 
-  if(eh_modulo == 2) {
+  if(eh_modulo == 2) { // se o arquivo for um modulo, insere no file as tabelas de uso, definicao e enderecos relativos
     instrucoes2 = fopen ("auxiliar.txt", "r");
     instrucoes3 = fopen (strarquivo_saida1.c_str(), "w+");
     fputs("TABLE USE\n", instrucoes3);
@@ -819,10 +811,10 @@ int main (int argc, char *argv[]){
     return 0;
   }
 
-  eh_modulo = 0;
+  eh_modulo = 0; // variavel que eh incrementada se acordo com o numero de begins e ends
   strarquivo_entrada.append(".asm");
   strarquivo_saida0.append(".pre");
-  strarquivo_saida1.append(".txt");
+  strarquivo_saida1.append(".obj");
 
   preproc(strarquivo_entrada, strarquivo_saida0);
   primeirapassagem (&tab_simb, &tab_def, &eh_modulo, strarquivo_saida0);
