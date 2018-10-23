@@ -1,0 +1,31 @@
+/*
+Trabalho 1 de Software Basico (Montador)
+Alunos:
+- Filipe Maia Soares  15/0051409
+- Carolina Araujo Carneiro  12/0113422
+
+Instrucoes de Compilacao:
+Usando g++ 7.2.0 (Ubuntu 17.10)
+g++ -std=c++14 montador.cpp -o montador
+
+Instrucoes de Execucao:
+./montador entrada
+
+entrada: nome do arquivo que se deseja montar sem o ".asm"
+Obs: os arquivos de saida terao os mesmos nomes do entrada com as extensoes ".pre" e ".obj"
+*/
+/*
+Trabalho 1 de Software Basico (Ligador)
+Alunos:
+- Filipe Maia Soares  15/0051409
+- Carolina Araujo Carneiro  12/0113422
+
+Instrucoes de Compilacao:
+Usando g++ 7.2.0 (Ubuntu 17.10)
+g++ -std=c++11 ligador.cpp -o ligador
+
+Instrucoes de Execucao:
+./ligador arquivo1.obj arquivo2.obj arquivo3.obj arquivo4.obj
+
+Arquivo de saída = arquivo1.e
+*/
